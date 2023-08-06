@@ -1,6 +1,7 @@
 import json
 import urllib3
 from airflow.hooks.base import BaseHook
+from urllib.parse import urlencode
 
 class PowerBIClientCredentialsHook(BaseHook):
     """
@@ -34,12 +35,15 @@ class PowerBIClientCredentialsHook(BaseHook):
                 'client_secret': self.client_secret,
                 'resource': self.resource
             }
+            encoded_data = urlencode(data).encode('utf-8')
+
+            print(f"Getting URL: {url} - data: {data} - encoded_data: {encoded_data}")
 
             http = urllib3.PoolManager()
             response = http.request(
                 'POST',
                 url,
-                fields=data,
+                body=encoded_data,
                 headers={'Content-Type': 'application/x-www-form-urlencoded'}
             )
             response_data = json.loads(response.data)
