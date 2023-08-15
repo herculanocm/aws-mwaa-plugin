@@ -86,3 +86,4 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
                 self.log.info(f"Waiting for Power BI dataset refresh to complete. Attempt {attempts+1}/{self.max_polling_attempts}")
                 attempts += 1
                 time.sleep(self.polling_interval)
+                
