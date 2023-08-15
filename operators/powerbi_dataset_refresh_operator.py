@@ -48,13 +48,10 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
         self.token = token
         self.polling_interval = polling_interval
         self.max_polling_attempts = max_polling_attempts
+        self.poll_interval = 5
 
     def _get_refresh_status(self):
-        # Fetch token from connection if not provided
-        if not self.token:
-            conn = self.get_hook('power_bi_conn_id')
-            self.token = conn.access_token
-
+        
         headers = {
             'Authorization': f'Bearer {self.token}'
         }
@@ -62,28 +59,26 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
         # Construct the API endpoint
         base_url = f'https://api.powerbi.com/{self.api_version}/myorg/groups/{self.workspace_id}/'
         endpoint_url = f'{base_url}datasets/{self.dataset_id}/{self.refresh_endpoint}'
+        print(f"Refresh dataflow url: {endpoint_url} - headers: {headers}")
 
         # Send the GET request to fetch the refresh status
         http = urllib3.PoolManager()
-        response = http.request('GET', endpoint_url, headers=headers)
-        return json.loads(response.data)
+        self.log.info(f"Refresh dataflow url: {endpoint_url}")
+
+
+        response = http.request(
+            'POST', 
+            endpoint_url, 
+            headers=headers
+            )
+        self.log.info(f"status: {response.status}, data: {response.data}")
+        return response.status
 
     def execute(self, context):
-        # Initiate the dataset refresh
-        super(PowerBIDatasetRefreshOperator, self).execute(context)
+        self.log.info(f"Calling API Dataflow ID: {self.dataset_id}")
+        status_code = self._get_refresh_status()
 
-        # Wait for the refresh to complete
-        attempts = 0
-        while attempts < self.max_polling_attempts:
-            refresh_status = self._get_refresh_status()
-            if refresh_status.get('status', {}).get('value') == 'Succeeded':
-                self.log.info(f"Power BI dataset refresh completed for dataset ID: {self.dataset_id}")
-                break
-            elif refresh_status.get('status', {}).get('value') == 'Failed':
-                self.log.error(f"Power BI dataset refresh failed for dataset ID: {self.dataset_id}")
-                raise Exception(f"Power BI dataset refresh failed for dataset ID: {self.dataset_id}")
-            else:
-                self.log.info(f"Waiting for Power BI dataset refresh to complete. Attempt {attempts+1}/{self.max_polling_attempts}")
-                attempts += 1
-                time.sleep(self.polling_interval)
-                
+        if status_code >= 200 and status_code <= 299:
+            self.log.info(f"Power BI dataset refresh completed for dataset ID: {self.dataset_id}")
+        else:
+            raise Exception(f"Power BI dataset refresh failed for dataset ID: {self.dataset_id}")
