@@ -70,7 +70,7 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
 
     def execute(self, context):
         # Initiate the dataset refresh
-        super(PowerBIdatasetRefreshOperator, self).execute(context)
+        super(PowerBIDatasetRefreshOperator, self).execute(context)
 
         # Wait for the refresh to complete
         attempts = 0
