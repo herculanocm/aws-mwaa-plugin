@@ -18,9 +18,6 @@ package-lock.json
 
 plugins.zip
 
-/wheels
-/wheels*
-
 
 # IDEs and editors
 /.idea
