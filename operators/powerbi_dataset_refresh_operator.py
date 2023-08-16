@@ -1,8 +1,10 @@
 import json
 import urllib3
 import time
+from datetime import datetime
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+
 
 class PowerBIDatasetRefreshOperator(BaseOperator):
     """
@@ -18,8 +20,6 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
         refresh_endpoint='refreshes',
         api_version='v1.0',
         token=None,
-        polling_interval=30,  # Time in seconds to wait before polling for refresh status
-        max_polling_attempts=30,  # Maximum number of attempts to poll for refresh status
         *args, **kwargs
     ):
         """
@@ -46,38 +46,57 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
         self.refresh_endpoint = refresh_endpoint
         self.api_version = api_version
         self.token = token
-        self.polling_interval = polling_interval
-        self.max_polling_attempts = max_polling_attempts
-        self.poll_interval = 5
 
-    def _get_refresh_status(self):
-        
+    def execute(self, context):
+        max_polling_attempts = 10
+        poll_interval = 5
+        format_string = '%Y-%m-%dT%H:%M:%S.%fZ'
+
+        self.log.info(f"Calling API Dataflow ID: {self.dataset_id}")
+    
         headers = {
             'Authorization': f'Bearer {self.token}'
         }
-        
-        # Construct the API endpoint
+
         base_url = f'https://api.powerbi.com/{self.api_version}/myorg/groups/{self.workspace_id}/'
         endpoint_url = f'{base_url}datasets/{self.dataset_id}/{self.refresh_endpoint}'
-        print(f"Refresh dataflow url: {endpoint_url} - headers: {headers}")
 
-        # Send the GET request to fetch the refresh status
         http = urllib3.PoolManager()
         self.log.info(f"Refresh dataflow url: {endpoint_url}")
 
-        response = http.request(
-            'POST', 
-            endpoint_url, 
-            headers=headers
-            )
-        self.log.info(f"status: {response.status}, data: {response.data}")
-        return response.status
+        try:
+            response = http.request("POST", endpoint_url, headers=headers)
+            if response.status < 200 or response.status > 299:
+                self.log.error(f"Error triggering Power BI dataset refresh: {response.status}")
+                raise Exception(f"Error triggering Power BI dataset refresh: {response.status}")
+        except Exception as e:
+            self.log.error(f"Error triggering Power BI dataset refresh: {e}")
+            raise
+        
+        for attempt in range(1, max_polling_attempts + 1):
+            time.sleep(poll_interval)
 
-    def execute(self, context):
-        self.log.info(f"Calling API Dataflow ID: {self.dataset_id}")
-        status_code = self._get_refresh_status()
+            try:
+                response = http.request("GET", endpoint_url, headers=headers)
+                if response.status < 200 or response.status > 299:
+                    self.log.warning(f"Error checking Power BI refresh status: {response.status}")
+                else:
+                    arr = json.loads(response.data.decode("utf-8")).get("value")
+                    max_value = datetime.strptime('1999-12-01T02:54:54.86Z', format_string)
+                    max_index = -1
 
-        if status_code >= 200 and status_code <= 299:
-            self.log.info(f"Power BI dataset refresh completed for dataset ID: {self.dataset_id}")
-        else:
-            raise Exception(f"Power BI dataset refresh failed for dataset ID: {self.dataset_id}")
+                    for index, item in enumerate(arr):
+                        _date = datetime.strptime(item["startTime"], format_string)
+                        if _date > max_value:
+                            max_value = _date
+                            max_index = index
+                    ultima_data = arr[max_index]
+                    refresh_status = ultima_data.get("status")
+                    self.log.info(f"Refresh attempt {attempt}/{self.max_polling_attempts} - Status: {refresh_status}")
+                    if refresh_status == "Completed":
+                        self.log.info("Power BI dataset refresh completed.")
+                        return
+            except Exception as e:
+                self.log.warning(f"Error checking Power BI refresh status: {e}")
+
+        self.log.warning("Power BI dataset refresh did not complete within the specified attempts.")
