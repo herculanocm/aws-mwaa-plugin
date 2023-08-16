@@ -92,7 +92,7 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
                             max_index = index
                     ultima_data = arr[max_index]
                     refresh_status = ultima_data.get("status")
-                    self.log.info(f"Refresh attempt {attempt}/{self.max_polling_attempts} - Status: {refresh_status}")
+                    self.log.info(f"Refresh attempt {attempt}/{max_polling_attempts} - Status: {refresh_status}")
                     if refresh_status == "Completed":
                         self.log.info("Power BI dataset refresh completed.")
                         return
