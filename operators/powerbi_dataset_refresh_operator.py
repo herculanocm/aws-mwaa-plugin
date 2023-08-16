@@ -10,7 +10,7 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
     """
     Airflow operator to refresh a Power BI dataset using the Power BI REST API.
     """
-    #template_fields = ('dataset_id',)
+    template_fields = ('dataset_id','workspace_id', 'token')
     
     @apply_defaults
     def __init__(

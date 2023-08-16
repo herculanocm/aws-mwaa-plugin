@@ -40,7 +40,7 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
         :param max_polling_attempts: Maximum number of attempts to poll for refresh status.
         :type max_polling_attempts: int
         """
-        
+        super(PowerBIDataflowRefreshOperator, self).__init__(*args, **kwargs)
         self.dataflow_id = dataflow_id
         self.workspace_id = workspace_id
         self.refresh_endpoint = refresh_endpoint
@@ -48,7 +48,7 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
         self.token = token
         self.polling_interval = polling_interval
         self.max_polling_attempts = max_polling_attempts
-        super(PowerBIDataflowRefreshOperator, self).__init__(*args, **kwargs)
+        
 
     def _get_refresh_status(self):
         
