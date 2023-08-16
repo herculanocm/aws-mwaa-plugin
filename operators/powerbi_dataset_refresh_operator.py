@@ -66,7 +66,7 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
 
         try:
             response = http.request("POST", endpoint_url, headers=headers)
-            if response.status < 200 or response.status > 299:
+            if response.status < 200 or response.sgittatus > 299:
                 self.log.error(f"Error triggering Power BI dataset refresh: {response.status}")
                 raise Exception(f"Error triggering Power BI dataset refresh: {response.status}")
         except Exception as e:
