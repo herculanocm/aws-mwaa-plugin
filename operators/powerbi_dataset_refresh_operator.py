@@ -65,7 +65,6 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
         http = urllib3.PoolManager()
         self.log.info(f"Refresh dataflow url: {endpoint_url}")
 
-
         response = http.request(
             'POST', 
             endpoint_url, 
