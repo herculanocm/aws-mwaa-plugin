@@ -102,7 +102,7 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
 
         
         response = http.request(
-            'POST', 
+            'GET', 
             transactions_endpoint_url, 
             body=json_data,
             headers=headers
