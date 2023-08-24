@@ -143,7 +143,6 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
                     
                     self.log.info(f"Refresh attempt {attempt}/{self.max_polling_attempts} - Status: {refresh_status}")
                     if refresh_status == "Success":
-                        print("Power BI dataset refresh completed.")
                         self.log.info("Power BI dataset refresh completed.")
                         return
 
