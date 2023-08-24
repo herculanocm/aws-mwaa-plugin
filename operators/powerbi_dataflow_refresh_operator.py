@@ -20,8 +20,8 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
         transactions_endpoint='transactions',
         api_version='v1.0',
         token=None,
-        polling_interval=6,  # Time in seconds to wait before polling for refresh status
-        max_polling_attempts=50,  # Maximum number of attempts to poll for refresh status
+        polling_interval=10,  # Time in seconds to wait before polling for refresh status
+        max_polling_attempts=120,  # Maximum number of attempts to poll for refresh status
         format_string = '%Y-%m-%dT%H:%M:%S.%fZ',
         *args, **kwargs
     ):
@@ -89,17 +89,18 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {self.token}'
         }
-
-        base_url = f'https://api.powerbi.com/{self.api_version}/myorg/groups/{self.workspace_id}/'
-        transactions_endpoint_url = f'{base_url}dataflows/{self.dataflow_id}/{self.transactions_endpoint}'
-        print(f"Refresh dataflow url: {transactions_endpoint_url} - headers: {headers}")
-        
-        http = urllib3.PoolManager()
         body_data = {
             "notifyOption": "MailOnFailure"
         }
-
         json_data = json.dumps(body_data)
+
+        base_url = f'https://api.powerbi.com/{self.api_version}/myorg/groups/{self.workspace_id}/'
+        transactions_endpoint_url = f'{base_url}dataflows/{self.dataflow_id}/{self.transactions_endpoint}'
+        self.log.info(f"Refresh dataflow url: {transactions_endpoint_url} - headers: {headers}")
+        
+        http = urllib3.PoolManager()
+
+        
         response = http.request(
             'POST', 
             transactions_endpoint_url, 
