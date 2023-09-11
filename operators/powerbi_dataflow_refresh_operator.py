@@ -22,7 +22,8 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
         token=None,
         polling_interval=10,  # Time in seconds to wait before polling for refresh status
         max_polling_attempts=120,  # Maximum number of attempts to poll for refresh status
-        format_string = '%Y-%m-%dT%H:%M:%S.%fZ',
+        # format_string = '%Y-%m-%dT%H:%M:%S.%fZ',
+        format_string = '%Y-%m-%dT%H:%M:%S',
         *args, **kwargs
     ):
         """
@@ -130,11 +131,12 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
                     self.log.warning(f"Error checking Power BI refresh status: {response.status}")
                 else:               
                     arr = json.loads(response.data.decode("utf-8")).get("value")
-                    max_value = datetime.strptime('1999-12-01T02:54:54.86Z', self.format_string)
+                    # max_value = datetime.strptime('1999-12-01T02:54:54.86Z', self.format_string)
+                    max_value = datetime.strptime('1999-12-01T21:29:32Z', self.format_string)
                     max_index = -1
 
                     for index, item in enumerate(arr):
-                        _date = datetime.strptime(item["startTime"], self.format_string)
+                        _date = datetime.strptime(item["startTime"][0:19], self.format_string)
                         if _date > max_value:
                             max_value = _date
                             max_index = index
