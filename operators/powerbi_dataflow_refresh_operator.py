@@ -132,7 +132,7 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
                 else:               
                     arr = json.loads(response.data.decode("utf-8")).get("value")
                     # max_value = datetime.strptime('1999-12-01T02:54:54.86Z', self.format_string)
-                    max_value = datetime.strptime('1999-12-01T21:29:32Z', self.format_string)
+                    max_value = datetime.strptime('2023-09-07T21:29:32', self.format_string)
                     max_index = -1
 
                     for index, item in enumerate(arr):
