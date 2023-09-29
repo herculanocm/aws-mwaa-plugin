@@ -152,5 +152,5 @@ class PowerBIDataflowRefreshOperator(BaseOperator):
             except Exception as e:
                 self.log.warning(f"Error checking Power BI refresh status: {e}")
 
-        self.log.warning("Power BI dataset refresh did not complete within the specified attempts.")
+        raise ValueError("Power BI dataset refresh did not complete within the specified attempts.")
     
