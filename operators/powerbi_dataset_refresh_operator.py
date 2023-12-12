@@ -50,7 +50,8 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
     def execute(self, context):
         max_polling_attempts = 10
         poll_interval = 5
-        format_string = '%Y-%m-%dT%H:%M:%S.%fZ'
+        # format_string = '%Y-%m-%dT%H:%M:%S.%fZ'
+        format_string = '%Y-%m-%dT%H:%M:%SZ'
 
         self.log.info(f"Calling API Dataflow ID: {self.dataset_id}")
     
@@ -86,7 +87,8 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
                     max_index = -1
 
                     for index, item in enumerate(arr):
-                        _date = datetime.strptime(item["startTime"], format_string)
+                        _dd = item["startTime"]
+                        _date = datetime.strptime(_dd[0:18], format_string)
                         if _date > max_value:
                             max_value = _date
                             max_index = index
