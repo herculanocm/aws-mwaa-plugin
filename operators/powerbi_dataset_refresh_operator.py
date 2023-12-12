@@ -88,7 +88,8 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
 
                     for index, item in enumerate(arr):
                         _dd = item["startTime"]
-                        _date = datetime.strptime(_dd[0:18], format_string)
+                        # _date = datetime.strptime(_dd[0:18], format_string)
+                        _date = datetime.strptime(_dd, '%Y-%m-%dT%H:%M:%S.%fZ')
                         if _date > max_value:
                             max_value = _date
                             max_index = index
