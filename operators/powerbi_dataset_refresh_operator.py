@@ -51,7 +51,7 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
         max_polling_attempts = 10
         poll_interval = 5
         # format_string = '%Y-%m-%dT%H:%M:%S.%fZ'
-        format_string = '%Y-%m-%dT%H:%M:%SZ'
+        format_string = '%Y-%m-%dT%H:%M:%S'
         default_ts = '1999-12-01T02:54:54.86Z'
 
         self.log.info(f"Calling API Dataflow ID: {self.dataset_id}")
