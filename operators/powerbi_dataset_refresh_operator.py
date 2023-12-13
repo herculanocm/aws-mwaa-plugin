@@ -52,6 +52,7 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
         poll_interval = 5
         # format_string = '%Y-%m-%dT%H:%M:%S.%fZ'
         format_string = '%Y-%m-%dT%H:%M:%SZ'
+        default_ts = '1999-12-01T02:54:54.86Z'
 
         self.log.info(f"Calling API Dataflow ID: {self.dataset_id}")
     
@@ -83,13 +84,13 @@ class PowerBIDatasetRefreshOperator(BaseOperator):
                     self.log.warning(f"Error checking Power BI refresh status: {response.status}")
                 else:
                     arr = json.loads(response.data.decode("utf-8")).get("value")
-                    max_value = datetime.strptime('1999-12-01T02:54:54.86Z', format_string)
+                    max_value = datetime.strptime(default_ts[0:18], format_string)
                     max_index = -1
 
                     for index, item in enumerate(arr):
                         _dd = item["startTime"]
-                        # _date = datetime.strptime(_dd[0:18], format_string)
-                        _date = datetime.strptime(_dd, '%Y-%m-%dT%H:%M:%S.%fZ')
+                        _date = datetime.strptime(_dd[0:18], format_string)
+                        # _date = datetime.strptime(_dd, '%Y-%m-%dT%H:%M:%S.%fZ')
                         if _date > max_value:
                             max_value = _date
                             max_index = index
